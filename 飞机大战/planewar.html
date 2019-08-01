@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>飞机大战</title>
+<style>
+	*{
+		margin: 0;
+		padding: 0;
+	}
+	#view{
+		width: 320px;
+		height: 568px;
+		background: url(img/bg.png);
+		margin: 0 auto;
+	}
+	#fly_me{
+		width: 34px;
+		height: 24px;
+		position: absolute;
+	}
+	</style>
+</head>
+
+<body>
+<div id="view">
+	<p>分数：<span id="score">0</span></p>
+</div>
+</body>
+<script>
+	//创建战机
+	var score = 0;
+	var span = document.getElementById('score');
+	var flyEle = document.createElement('div');
+	flyEle.id = 'fly_me';
+	flyEle.innerHTML = '<img src = "img/me.png" />';
+	document.body.appendChild(flyEle);
+	//鼠标跟随
+	document.onmousemove = function(e){
+		var flyEle = document.getElementById('fly_me');
+		var view = document.getElementById('view');
+		var flyX = e.clientX - 17;
+		var flyY = e.clientY - 12;
+		var xCheck = flyX > view.offsetLeft && flyX < view.offsetLeft + view.offsetWidth - 34;
+		var yCheck = flyY > view.offsetTop && flyY < view.offsetTop + view.offsetHeight - 24;
+		if(xCheck && yCheck){
+			flyEle.style.top = flyY + 'px';
+			flyEle.style.left = flyX + 'px';
+			flyEle.flag = true;
+		}
+	}
+	var objB = {
+		name:'bullet',
+		num : 1,
+		arr:[],
+		width : 6,
+		height : 14,
+		path: './img/b.png'
+	};
+	createBullet(objB);
+	function createBullet(obj){
+		var inter1 = setInterval(function(){
+			var flyEle = document.getElementById('fly_me');
+			if(flyEle.flag){
+				var ele = document.createElement('div');
+				ele.id = obj.name + obj.num;
+				var length = obj.arr.length;
+				if(length < 50){
+					obj.arr[length] = ele.id + '|';
+					obj.num ++;
+					ele.style.width = obj.width + 'px';
+					ele.style.height = obj.height + 'px';
+					ele.style.position = 'absolute';
+					ele.style.background = 'url('+obj.path+')'
+					ele.style.top = flyEle.offsetTop + 6 + 'px';
+					obj.arr[length] = obj.arr[length] + ele.style.top + '|';
+					ele.style.left = flyEle.offsetLeft + 14 + 'px';
+					obj.arr[length] = obj.arr[length] + ele.style.left;
+				}
+				document.body.appendChild(ele);
+			}
+		},300)
+	}
+	function moveBullet(){
+		var flyEle = document.getElementById('fly_me');
+		if(flyEle.flag){
+			for (var i = 0;i < objB.arr.length;i ++){
+				var newArr = objB.arr[i].split('|');
+				var eleB = document.getElementById(newArr[0]);
+				newArr[1] = parseInt(newArr[1]) - 1;
+				eleB.style.top = newArr[1] + 'px';
+				objB.arr[i] = newArr[0] + '|' + newArr[1] + '|' + newArr[2];
+				if(newArr[1]<0){
+					objB.arr.splice(i,1);
+					var delEle = document.getElementById(newArr[0]);
+					delEle.parentNode.removeChild(delEle);
+				}
+			}
+		}
+	}
+	//敌机
+	var objF = {
+		name:'foe',
+		num : 1,
+		arr:[],
+		width : 34,
+		height : 24,
+		path: './img/foe.png'
+	};
+	createFoe(objF);
+	function createFoe(obj){
+		var inter2 = setInterval(function(){
+			var flyEle = document.getElementById('fly_me');
+			if(flyEle.flag){
+				var ele = document.createElement('div');
+				ele.id = obj.name + obj.num;
+				var length = obj.arr.length;
+				if(length < 50){
+					obj.arr[length] = ele.id + '|';
+					obj.num ++;
+					ele.style.width = obj.width + 'px';
+					ele.style.height = obj.height + 'px';
+					ele.style.position = 'absolute';
+					ele.style.background = 'url('+obj.path+')'
+					ele.style.top = '0px';
+					obj.arr[length] = obj.arr[length] + ele.style.top + '|';
+					var ran = 285*Math.random();
+					ele.style.left = view.offsetLeft +ran + 'px';
+					obj.arr[length] = obj.arr[length] + ele.style.left;
+				}
+				document.body.appendChild(ele);
+			}
+		},500)
+	}
+	function moveFoe(){
+		var flyEle = document.getElementById('fly_me');
+		if(flyEle.flag){
+			for (var i = 0;i < objF.arr.length;i ++){
+				var newArr = objF.arr[i].split('|');
+				var eleF = document.getElementById(newArr[0]);
+				newArr[1] = parseInt(newArr[1]) + 1;
+				eleF.style.top = newArr[1] + 'px';
+				objF.arr[i] = newArr[0] + '|' + newArr[1] + '|' + newArr[2];
+				if(newArr[1]>view.offsetHeight - 24){
+					objF.arr.splice(i,1);
+					var delEle = document.getElementById(newArr[0]);
+					delEle.parentNode.removeChild(delEle);
+				}
+			}
+		}
+	}
+	var time = setInterval(function(){
+			moveBullet();
+			
+		},2)
+	var timeID = setInterval(function(){
+			moveFoe();
+			for(var i=0;i<objF.arr.length;i++){
+				var arrF = objF.arr[i].split('|');
+				var eleF = document.getElementById(arrF[0]);
+				var xFs = parseInt(arrF[2]);
+				var xFe = parseInt(arrF[2]) + 34;
+				var yFs = parseInt(arrF[1]);
+				var yFe = parseInt(arrF[1]) + 24;
+				for(var j=0;j<objB.arr.length;j++){
+					var arrB = objB.arr[j].split('|');
+					var eleB = document.getElementById(arrB[0]);
+					var xB = parseInt(arrB[2]);
+					var yB = parseInt(arrB[1]);
+					var xCheck = xB > xFs && xB < xFe;
+					var yCheck = yB > yFs && yB < yFe;
+					if(xCheck && yCheck){
+						objF.arr.splice(i,1);
+						eleF.parentNode.removeChild(eleF);
+						objB.arr.splice(j,1);
+						eleB.parentNode.removeChild(eleB);
+						score ++;
+						span.innerHTML = score;
+	
+					}
+				}
+			}
+		var xChe = flyEle.offsetLeft > xFs -34 && flyEle.offsetLeft < xFs + 34;
+		var yChe = flyEle.offsetTop > yFs - 24 && flyEle.offsetTop < yFs + 24;
+		if (xChe && yChe){
+			alert('游戏结束，你的分数是'+score);
+			window.location.reload();
+	}
+		},10)
+	
+	</script>
+</html>
